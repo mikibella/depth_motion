@@ -46,10 +46,10 @@ flags.DEFINE_float('reconstr_weight', 0.85, 'Frame reconstruction loss weight.')
 flags.DEFINE_float('ssim_weight', 0.15, 'SSIM loss weight.')
 flags.DEFINE_float('smooth_weight', 0.04, 'Smoothness loss weight.')
 flags.DEFINE_float('icp_weight', 0.0, 'ICP loss weight.')
-flags.DEFINE_float('size_constraint_weight', 0.0005, 'Weight of the object '
+flags.DEFINE_float('size_constraint_weight', 0, 'Weight of the object ' #0.0005
                    'size constraint loss. Use only when motion handling is '
                    'enabled.')
-flags.DEFINE_integer('batch_size', 4, 'The size of a sample batch')
+flags.DEFINE_integer('batch_size', 1, 'The size of a sample batch')
 flags.DEFINE_integer('img_height', 128, 'Input frame height.')
 flags.DEFINE_integer('img_width', 416, 'Input frame width.')
 flags.DEFINE_integer('seq_length', 3, 'Number of frames in sequence.')
@@ -83,7 +83,7 @@ flags.DEFINE_string('imagenet_ckpt', None, 'Initialize the weights according '
 flags.DEFINE_string('checkpoint_dir', None, 'Directory to save model '
                     'checkpoints.')
 flags.DEFINE_integer('train_steps', 1000, 'Number of training steps.') #10000000
-flags.DEFINE_integer('summary_freq', 100, 'Save summaries every N steps.')
+flags.DEFINE_integer('summary_freq', 5, 'Save summaries every N steps.')
 flags.DEFINE_bool('depth_upsampling', True, 'Whether to apply depth '
                   'upsampling of lower-scale representations before warping to '
                   'compute reconstruction loss on full-resolution image.')
@@ -118,6 +118,7 @@ def main(_):
   np.random.seed(seed)
   # os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
   os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
+  #TF_CPP_VMODULE="asm_compiler=3"
   random.seed(seed)
   FLAGS.joint_encoder = False
 
@@ -235,6 +236,7 @@ def train(train_model, pretrained_ckpt, imagenet_ckpt, checkpoint_dir,
     steps_per_epoch = train_model.reader.steps_per_epoch
     step = 1
     while step <= train_steps:
+      print(step)
       fetches = {
           'train': train_model.train_op,
           'global_step': train_model.global_step,

@@ -176,7 +176,7 @@ for d in glob.glob(INPUT_DIR + '/*/'):
                     with gfile.Open(output_filepath, file_mode) as current_output_handle:
                         current_output_handle.write(seqname+" "+str(imgnum)+"\n")
                     written_before.append(output_filepath)
-
+                    big_img = cv2.cvtColor(big_img.astype(np.uint8), cv2.COLOR_BGR2GRAY)
                     cv2.imwrite(OUTPUT_DIR + seqname + '/' + imgnum + '-fseg.png', big_img)
                     simpan = cv2.imread(OUTPUT_DIR + seqname + '/' + imgnum + '-fseg.png', 0)
                     print("simpan = ", simpan.shape)
