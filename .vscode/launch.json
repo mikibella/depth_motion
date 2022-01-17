@@ -1,0 +1,26 @@
+{
+    // Verwendet IntelliSense zum Ermitteln möglicher Attribute.
+    // Zeigen Sie auf vorhandene Attribute, um die zugehörigen Beschreibungen anzuzeigen.
+    // Weitere Informationen finden Sie unter https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Aktuelle Datei",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": [
+                "--logtostderr",
+                "--file_extension", "png",
+                "--checkpoint_dir","D:/bellmi2/code/struct2depth/model/trainings_test_3",
+                "--data_dir", "D:/bellmi2/train_3_frames_gray",
+                "--architecture" ,"resnet",
+                //"--pretrained_ckpt", "D:/bellmi2/code/struct2depth/model/model-199160",
+                "--imagenet_norm" ,"True ",
+                "--joint_encoder", "False"
+                // "--handle_motion","False"
+            ]
+        }
+    ]
+}
