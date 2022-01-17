@@ -88,6 +88,7 @@ class DataReader(object):
         elif self.file_extension == 'png':
           image_seq = tf.image.decode_png(image_contents, channels=3)
           seg_seq = tf.image.decode_png(seg_contents, channels=3)
+          # seg_seq = tf.image.decode_png(seg_contents, channels=)
 
       with tf.name_scope('load_intrinsics'):
         cam_reader = tf.TextLineReader()
