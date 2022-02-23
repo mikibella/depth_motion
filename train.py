@@ -22,14 +22,18 @@ from __future__ import print_function
 
 import math
 import os
+import sys
 import random
 import time
 from absl import app
 from absl import flags
 from absl import logging
 import numpy as np
+#os.environ['TF_CPP_MIN_VLOG_LEVEL']='3'
+#os.environ['TF_CUDNN_WORKSPACE_LIMIT_IN_MB']='1024'
 import tensorflow as tf
 
+import random
 import model
 import nets
 import reader
@@ -82,8 +86,8 @@ flags.DEFINE_string('imagenet_ckpt', None, 'Initialize the weights according '
                     'architecture to be ResNet-18.')
 flags.DEFINE_string('checkpoint_dir', None, 'Directory to save model '
                     'checkpoints.')
-flags.DEFINE_integer('train_steps', 1000, 'Number of training steps.') #10000000
-flags.DEFINE_integer('summary_freq', 5, 'Save summaries every N steps.')
+flags.DEFINE_integer('train_steps', 1000000, 'Number of training steps.') #10000000
+flags.DEFINE_integer('summary_freq', 100, 'Save summaries every N steps.')
 flags.DEFINE_bool('depth_upsampling', True, 'Whether to apply depth '
                   'upsampling of lower-scale representations before warping to '
                   'compute reconstruction loss on full-resolution image.')
@@ -121,10 +125,11 @@ def main(_):
   #TF_CPP_VMODULE="asm_compiler=3"
   random.seed(seed)
   FLAGS.joint_encoder = False
+  FLAGS.handle_motion = False
 
-  # tf.test.is_gpu_available(
-  #   cuda_only=False, min_cuda_compute_capability=None
-  # )
+ # tf.test.is_gpu_available(
+ #   cuda_only=False, min_cuda_compute_capability=None
+ # )
 
   
   if FLAGS.handle_motion and FLAGS.joint_encoder:
@@ -151,6 +156,7 @@ def main(_):
                      'when using ResNet-architecture.')
   if FLAGS.compute_minimum_loss and FLAGS.exhaustive_mode:
     raise ValueError('Exhaustive mode has no effect when compute_minimum_loss '
+    
                      'is enabled.')
   if FLAGS.img_width % (2 ** 5) != 0 or FLAGS.img_height % (2 ** 5) != 0:
     logging.warn('Image size is not divisible by 2^5. For the architecture '
@@ -162,7 +168,10 @@ def main(_):
 
   if not gfile.Exists(FLAGS.checkpoint_dir):
     gfile.MakeDirs(FLAGS.checkpoint_dir)
-
+  lines = open('/content/drive/MyDrive/3_frames_aligned/all_files.txt').readlines()
+  print("Shuffle training data")
+  random.shuffle(lines)
+  open('/content/drive/MyDrive/3_frames_aligned/train.txt', 'w').writelines(lines)
   train_model = model.Model(shuffle = False,
                             data_dir=FLAGS.data_dir,
                             file_extension=FLAGS.file_extension,
@@ -214,6 +223,7 @@ def train(train_model, pretrained_ckpt, imagenet_ckpt, checkpoint_dir,
                            saver=None)
   config = tf.ConfigProto()
   config.gpu_options.allow_growth = True
+  #config.gpu_options.per_process_gpu_memory_fraction = 0.3
   #   intra_op_parallelism_threads=4, 
   #                       inter_op_parallelism_threads=4,
   #   device_count = {'GPU': 0}
@@ -233,22 +243,27 @@ def train(train_model, pretrained_ckpt, imagenet_ckpt, checkpoint_dir,
     logging.info('Training...')
     start_time = time.time()
     last_summary_time = time.time()
-    steps_per_epoch = train_model.reader.steps_per_epoch
+    #steps_per_epoch = train_model.reader.steps_per_epoch
+    steps_per_epoch = 2000
+    
     step = 1
     while step <= train_steps:
-      print(step)
       fetches = {
           'train': train_model.train_op,
           'global_step': train_model.global_step,
           'incr_global_step': train_model.incr_global_step
       }
+      #run_metadata = tf.RunMetadata()
+      #=sess.run(fetches,options=tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE, output_partition_graphs=True), run_metadata=run_metadata)
       if step % summary_freq == 0:
         fetches['loss'] = train_model.total_loss
         fetches['summary'] = sv.summary_op
-
+      #sess.run(tf.contrib.memory_stats.MaxBytesInUse())
+      #os.system('nvidia-smi')
       results = sess.run(fetches)
       global_step = results['global_step']
-
+      #tf.config.get_memory_usage('GPU:0')
+      #grep MemoryLogTensorAllocation train.log
       if step % summary_freq == 0:
         sv.summary_writer.add_summary(results['summary'], global_step)
         train_epoch = math.ceil(global_step / steps_per_epoch)
@@ -264,9 +279,11 @@ def train(train_model, pretrained_ckpt, imagenet_ckpt, checkpoint_dir,
         logging.info('[*] Saving checkpoint to %s...', checkpoint_dir)
         saver.save(sess, os.path.join(checkpoint_dir, 'model'),
                    global_step=global_step)
-
+        #os.execv(sys.argv[0], sys.argv)
+        #os.execv(sys.executable, ['python'] + sys.argv)
       # Setting step to global_step allows for training for a total of
       # train_steps even if the program is restarted during training.
+      print(step)
       step = global_step + 1
 
 

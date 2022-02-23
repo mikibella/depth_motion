@@ -33,8 +33,8 @@ SEQ_LENGTH = 3
 WIDTH = 416
 HEIGHT = 128
 STEPSIZE = 1
-INPUT_DIR = 'D:/bellmi2/kitti_datensatz'
-OUTPUT_DIR = 'D:/bellmi2/train_3_frames_aligned'
+INPUT_DIR = '/content/drive/MyDrive/full_kitti/'
+OUTPUT_DIR = '/content/drive/MyDrive/3_frames_new/'
 
 
 def get_line(file, start):
@@ -90,22 +90,22 @@ if not OUTPUT_DIR.endswith('/'):
     OUTPUT_DIR = OUTPUT_DIR + '/'
 
 for d in glob.glob(INPUT_DIR + '/*/'):
-    date = d.split('\\')[-2]
+    date = d.split('/')[-2]
     file_calibration = d + 'calib_cam_to_cam.txt'
     calib_raw = [get_line(file_calibration, 'P_rect_02'), get_line(file_calibration, 'P_rect_03')]
 
     for d2 in glob.glob(d + '*/'):
-        seqname = d2.split('\\')[-2]
+        seqname = d2.split('/')[-2]
         number = int(seqname.split("_")[-2])
-        if int(number)<3 :
+        if int(number)< 90:
             print('Processing sequence', seqname)
-            for subfolder in ['image_02/data', 'image_03/data']:
+            for subfolder in ['image_03/data']:
                 output_filepath = os.path.join(OUTPUT_DIR, 'train.txt')
                 written_before = []
                 gfile = tf.gfile
                 file_mode = 'a'
                 ct = 1
-                seqname = d2.split('\\')[-2] + subfolder.replace('image', '').replace('/data', '')
+                seqname = d2.split('/')[-2] + subfolder.replace('image', '').replace('/data', '')
                 if not os.path.exists(OUTPUT_DIR + seqname):
                     os.makedirs(OUTPUT_DIR + seqname)
 

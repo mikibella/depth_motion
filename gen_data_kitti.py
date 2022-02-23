@@ -99,7 +99,7 @@ for d in glob.glob(INPUT_DIR + '/*/'):
         number = int(seqname.split("_")[-2])
         if int(number)<3 :
             print('Processing sequence', seqname)
-            for subfolder in ['image_02/data', 'image_03/data']:
+            for subfolder in ['image_02/data''image_03/data']:
                 output_filepath = os.path.join(OUTPUT_DIR, 'train.txt')
                 written_before = []
                 gfile = tf.gfile

@@ -149,7 +149,7 @@ def _run_inference(output_dir=None,
                    flip_for_depth=False,
                    inference_mode=INFERENCE_MODE_SINGLE,
                    inference_crop=INFERENCE_CROP_NONE,
-                   use_masks=False):
+                   use_masks=True):
   """Runs inference. Refer to flags in inference.py for details."""
   inference_model = model.Model(is_training=False,
                                 batch_size=batch_size,
@@ -287,7 +287,7 @@ def _run_inference(output_dir=None,
           input_image_seq.append(im)
           if use_masks:
             im_seg_path = im_files[i].replace('.%s' % file_extension,
-                                              '-seg.%s' % file_extension)
+                                              '-fseg.%s' % file_extension)
             if not gfile.Exists(im_seg_path):
               raise ValueError('No segmentation mask %s has been found for '
                                'image %s. If none are available, disable '
@@ -350,7 +350,7 @@ def _run_inference(output_dir=None,
           input_image_stack = np.expand_dims(input_image_stack, axis=0)
           if use_masks:
             im_seg_path = im_files[i].replace('.%s' % file_extension,
-                                              '-seg.%s' % file_extension)
+                                              '-fseg.%s' % file_extension)
             if not gfile.Exists(im_seg_path):
               raise ValueError('No segmentation mask %s has been found for '
                                'image %s. If none are available, disable '
